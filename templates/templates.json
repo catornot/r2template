@@ -1,0 +1,67 @@
+{
+    "templates": {
+        "server-side": [
+            {
+                "name": "server.nut",
+                "path": "mod/scripts/vscripts",
+                "run_on": "SERVER && MP",
+                "inits": [
+                    {
+                        "target": "ServerCallback",
+                        "when": "After",
+                        "function": "Init_server"
+                    }
+                ]
+            }
+        ],
+        "weapon-keyvalues": [
+            {
+                "name": "mp_gun.txt",
+                "path": "keyvalues/scripts/weapons",
+                "run_on": null,
+                "inits": null
+            }
+        ],
+        "client-side": [
+            {
+                "name": "client.nut",
+                "path": "mod/scripts/vscripts",
+                "run_on": "CLIENT && MP",
+                "inits": [
+                    {
+                        "target": "ClientCallback",
+                        "when": "After",
+                        "function": "Init_client"
+                    }
+                ]
+            }
+        ],
+        "shared": [
+            {
+                "name": "shared.nut",
+                "path": "mod/scripts/vscripts",
+                "run_on": "MP",
+                "inits": [
+                    {
+                        "target": "ServerCallback",
+                        "when": "After",
+                        "function": "Init_server"
+                    },
+                    {
+                        "target": "ClientCallback",
+                        "when": "After",
+                        "function": "Init_client"
+                    }
+                ]
+            }
+        ]
+    },
+    "combo_templates": {
+        "full": [
+            "server-side",
+            "client-side",
+            "shared",
+            "weapon-keyvalues"
+        ]
+    }
+}
