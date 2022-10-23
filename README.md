@@ -14,7 +14,7 @@ currently by default the following templates are included
 - shared -> client side and server side in one file (shared) boilerplate
 - full -> everything in one neat package
 
-## Building
+## Compiling from source
 the executable needs to be included with the templates folder and it should cross platform
 
 ### Windows
