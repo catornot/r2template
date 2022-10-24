@@ -5,6 +5,7 @@
 
 #rust :D
 /target
+/author.test
 
 # User-specific files
 *.rsuser

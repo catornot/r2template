@@ -1,6 +1,0 @@
-WeaponData
-{
-	MP_BASE
-	{
-	}
-}
