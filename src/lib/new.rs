@@ -47,10 +47,6 @@ pub fn new_project(name: String, template: String) {
 
     let template = get_template(&template);
 
-    println!("creating mod.json");
-
-    fs::create_dir(&name).unwrap_or_else(|_| println!("we failed to create folder :("));
-
     let mut scripts = Vec::new();
 
     for file in template.includes {
@@ -97,16 +93,20 @@ pub fn new_project(name: String, template: String) {
         }
     }
 
+    println!("generating mod.json");
+
     let mut path_to_mod_json = PathBuf::new();
     path_to_mod_json = path_to_mod_json.join(&name);
     path_to_mod_json = path_to_mod_json.join("mod.json");
 
-    let json_data = generate_mod_json(&name, &scripts); // TODO: redo this with clap
+    let json_data = generate_mod_json(&name, &scripts);
+
+    println!("creating mod.json");
 
     match fs::write(&path_to_mod_json, &json_data) {
         Ok(_) => println!("successfully added mod.json to the project"),
         Err(err) => println!(
-            "failed to generate mod json, {:?} ----- dumped data {}",
+            "failed to write mod json, {:?} ----- dumped data {}",
             err, json_data
         ),
     }
