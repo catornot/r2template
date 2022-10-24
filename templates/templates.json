@@ -54,6 +54,50 @@
                     }
                 ]
             }
+        ],
+        "maps": [
+            {
+                "name": "",
+                "path": "mod/maps",
+                "run_on": null,
+                "inits": null
+            },
+            {
+                "name": "",
+                "path": "mod/maps/graphs",
+                "run_on": null,
+                "inits": null
+            },
+            {
+                "name": "",
+                "path": "mod/maps/navmesh",
+                "run_on": null,
+                "inits": null
+            },
+            {
+                "name": "sh_private_lobby_mp_map.gnut",
+                "path": "mod/scripts/vscripts/lobby",
+                "run_on": "SERVER && MP",
+                "inits": [
+                    {
+                        "target": "ServerCallback",
+                        "when": "Before",
+                        "function": "PrivateLobbyAddMpMapMap"
+                    }
+                ]
+            },
+            {
+                "name": "rpak.json",
+                "path": "paks",
+                "run_on": null,
+                "inits": null
+            },
+            {
+                "name": "vpk.json",
+                "path": "paks",
+                "run_on": null,
+                "inits": null
+            }
         ]
     },
     "combo_templates": {
@@ -61,7 +105,12 @@
             "server-side",
             "client-side",
             "shared",
-            "weapon-keyvalues"
+            "weapon-keyvalues",
+            "maps"
+        ],
+        "maps-server-side": [
+            "server-side",
+            "maps"
         ]
     }
 }
