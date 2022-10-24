@@ -41,7 +41,7 @@ impl Cli {
     }
 }
 
-pub fn read_relative_json(reltive_path: &str) -> (String, PathBuf) {
+fn get_project_root() -> PathBuf {
     let path = get_dylib_path();
     let mut path = match path {
         None => panic!("The process path could not be determined"),
@@ -62,48 +62,34 @@ pub fn read_relative_json(reltive_path: &str) -> (String, PathBuf) {
         } else {
             new_path = new_path.join(p);
         }
-    }
+    };
 
-    println!("path to executable is {:?}", &new_path);
-    let new_path = new_path.join(reltive_path);
+    new_path
+}
+
+pub fn read_relative_json(reltive_path: &str) -> (String, PathBuf) {
+    let path = get_project_root();
+
+    println!("path to executable is {:?}", &path);
+    let path = path.join(reltive_path);
 
     (
-        fs::read_to_string(&new_path)
-            .expect(&format!("failed to read json file : {:?}", new_path)[..]),
-        new_path,
+        fs::read_to_string(&path)
+            .expect(&format!("failed to read json file : {:?}", path)[..]),
+            path,
     )
 }
 
 pub fn write_relative_json(reltive_path: &str, data: &String) {
-    let path = get_dylib_path();
-    let mut path = match path {
-        None => panic!("The process path could not be determined"),
-        Some(path) => path,
-    };
+    let path = get_project_root();
 
-    if cfg!(debug_assertions) {
-        path.pop();
-        path.pop();
-    }
-    path.pop();
+    println!("path to executable is {:?}", &path);
+    let path = path.join(reltive_path);
 
-    let mut new_path = PathBuf::new();
-    for p in &path {
-        // so like for reason the function above gives me \\\\?\\C: on windows so like hack here for it :(
-        if p.to_string_lossy().find("C:").is_some() {
-            new_path = new_path.join("C:\\");
-        } else {
-            new_path = new_path.join(p);
-        }
-    }
-
-    println!("path to executable is {:?}", &new_path);
-    let new_path = new_path.join(reltive_path);
-
-    fs::write(&new_path, data).unwrap_or_else(|err| {
+    fs::write(&path, data).unwrap_or_else(|err| {
         println!(
             "WARNING: failed to write to {:?} because of {:?}",
-            new_path, err
+            path, err
         )
     });
 }

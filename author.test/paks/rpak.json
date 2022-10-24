@@ -1,0 +1,12 @@
+{
+    "Aliases":
+    {
+        "mp_map.rpak":"sp_map_previous.rpak"
+    },
+	"Preload": {
+        "mp_map": false
+	},
+    "Postload": {
+        "mp_map": false
+    }
+}

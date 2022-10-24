@@ -1,0 +1,40 @@
+{
+    "Name": "author.test",
+    "Description": "",
+    "Version": "0.1.0",
+    "LoadPriority": 1,
+    "ConVars": [],
+    "Scripts": [
+        {
+            "Path": "server.nut",
+            "RunOn": "SERVER && MP",
+            "ServerCallback": {
+                "After": "Init_server"
+            }
+        },
+        {
+            "ClientCallback": {
+                "After": "Init_client"
+            },
+            "Path": "client.nut",
+            "RunOn": "CLIENT && MP"
+        },
+        {
+            "ClientCallback": {
+                "After": "Init_client"
+            },
+            "Path": "shared.nut",
+            "RunOn": "MP",
+            "ServerCallback": {
+                "After": "Init_server"
+            }
+        },
+        {
+            "Path": "sh_private_lobby_mp_map.gnut",
+            "RunOn": "SERVER && MP",
+            "ServerCallback": {
+                "Before": "PrivateLobbyAddMpMapMap"
+            }
+        }
+    ]
+}

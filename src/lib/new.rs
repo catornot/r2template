@@ -1,4 +1,6 @@
+use serde::Serialize;
 use serde_derive::{Deserialize, Serialize};
+use serde_json::{json, Value};
 use std::{collections::HashMap, fs, path::PathBuf};
 
 use super::prelude::*;
@@ -9,11 +11,9 @@ struct Templates {
     combo_templates: HashMap<String, Vec<String>>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
-struct InitData {
-    target: String,
-    when: String,
-    function: String,
+struct Template {
+    path_to_json: PathBuf,
+    includes: Vec<TemplateFileData>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -24,9 +24,22 @@ struct TemplateFileData {
     inits: Option<Vec<InitData>>,
 }
 
-struct Template {
-    path_to_json: PathBuf,
-    includes: Vec<TemplateFileData>,
+#[derive(Serialize, Deserialize, Clone)]
+struct InitData {
+    target: String,
+    when: String,
+    function: String,
+}
+
+#[allow(non_snake_case)]
+#[derive(Serialize, Deserialize)]
+struct ModJson {
+    Name: String,
+    Description: String,
+    Version: String,
+    LoadPriority: i32,
+    ConVars: Vec<Value>,
+    Scripts: Vec<Value>,
 }
 
 pub fn new_project(name: String, template: String) {
@@ -62,7 +75,7 @@ pub fn new_project(name: String, template: String) {
         read_path = read_path.join(&file.name);
 
         if read_path.is_dir() {
-            println!( "This is a dir; reading nothing; continuing normally" );
+            println!("This is a dir; reading nothing; continuing normally");
             continue;
         }
 
@@ -88,7 +101,7 @@ pub fn new_project(name: String, template: String) {
     path_to_mod_json = path_to_mod_json.join(&name);
     path_to_mod_json = path_to_mod_json.join("mod.json");
 
-    let json_data = generate_mod_json(&name, scripts.concat()); // TODO: redo this with clap
+    let json_data = generate_mod_json(&name, &scripts); // TODO: redo this with clap
 
     match fs::write(&path_to_mod_json, &json_data) {
         Ok(_) => println!("successfully added mod.json to the project"),
@@ -130,57 +143,82 @@ fn get_template(template_name: &String) -> Template {
     }
 }
 
-fn generate_script_data(file: TemplateFileData) -> String {
-    let head = format!(
-        r#"
-        {{
-            "Path": "{0}",
-            "RunOn": "{1}","#,
-        file.name,
-        file.run_on.unwrap()
-    );
+fn generate_script_data(file: TemplateFileData) -> Value {
+    let mut scripts = json!({
+        "Path": file.name,
+        "RunOn": file.run_on.unwrap(),
+    });
 
-    let body: String = match file.inits {
-        Some(inits) => inits
-            .iter()
-            .map(|content| {
-                format!(
-                    r#"
-            "{}": {{
-                "{}": "{}"
-            }},
-        "#,
-                    content.target, content.when, content.function
-                )
-            })
-            .collect(),
-        _ => String::from(""),
+    if file.inits.is_some() {
+        for content in file.inits.unwrap() {
+            merge(
+                &mut scripts,
+                &json!({
+                    &content.target: {
+                        &content.when: content.function
+                    }
+                }),
+            )
+        }
     };
 
-    let tail = String::from("},");
-
-    head + &body[..] + &tail[..]
+    scripts
 }
 
-fn generate_mod_json(name: &String, scripts: String) -> String {
-    let head = format!(
-        r#"{{
-    "Name" : "{}",
-    "Description" : "",
+fn generate_mod_json(name: &String, scripts: &Vec<Value>) -> String {
+    let mod_json = json!({
+        "Name" : name,
+        "Description" : "",
+        "Version": "0.1.0",
+        "LoadPriority": 1,
+
+        "ConVars": [
+        ],
+
+        "Scripts": scripts
+    });
+
+    let mod_json: ModJson = serde_json::from_value(mod_json).expect("smth failed while trying to generate mod.json");
+
+    let buf = Vec::new();
+    let formatter = serde_json::ser::PrettyFormatter::with_indent(b"    ");
+    let mut ser = serde_json::Serializer::with_formatter(buf, formatter);
+    mod_json.serialize(&mut ser).unwrap();
+    String::from_utf8(ser.into_inner()).unwrap()
+}
+
+fn merge(a: &mut Value, b: &Value) {
+    match (a, b) {
+        (&mut Value::Object(ref mut a), &Value::Object(ref b)) => {
+            for (k, v) in b {
+                merge(a.entry(k.clone()).or_insert(Value::Null), v);
+            }
+        }
+        (a, b) => {
+            *a = b.clone();
+        }
+    }
+}
+
+/*
+reference :D
+{
+    "Name" : "cat_or_not.AimLab",
+    "Description" : "A mod to help you improve your aim :D",
     "Version": "0.1.0",
     "LoadPriority": 1,
-    
+
     "ConVars": [
     ],
 
     "Scripts": [
-        {}
+        {
+            "Path": "server.nut",
+            "RunOn": "SERVER && MP",
+            "ServerCallback": {
+                "After": "Init_server"
+            }
+        }
     ]
-"#,
-        name, scripts
-    );
-
-    let tail = String::from("}");
-
-    head + &tail[..]
 }
+*/

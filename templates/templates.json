@@ -94,7 +94,7 @@
             },
             {
                 "name": "vpk.json",
-                "path": "paks",
+                "path": "vpk",
                 "run_on": null,
                 "inits": null
             }
