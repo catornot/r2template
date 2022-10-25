@@ -95,9 +95,11 @@ pub fn new_project(name: String, template: String) {
 
     println!("generating mod.json");
 
-    let mut path_to_mod_json = PathBuf::new();
-    path_to_mod_json = path_to_mod_json.join(&name);
-    path_to_mod_json = path_to_mod_json.join("mod.json");
+    let mut path_to_mod_root = PathBuf::new();
+    path_to_mod_root = path_to_mod_root.join(&name);
+    let path_to_mod_json = path_to_mod_root.join("mod.json");
+    let path_to_manifest = path_to_mod_root.join("manifest.json");
+    let path_to_readme = path_to_mod_root.join("README.md");
 
     let json_data = generate_mod_json(&name, &scripts);
 
@@ -105,10 +107,25 @@ pub fn new_project(name: String, template: String) {
 
     match fs::write(&path_to_mod_json, &json_data) {
         Ok(_) => println!("successfully added mod.json to the project"),
-        Err(err) => println!(
-            "failed to write mod json, {:?} ----- dumped data {}",
-            err, json_data
-        ),
+        Err(err) => println!("failed to write mod.json: {:?}", err),
+    }
+
+    println!("generating manifest.json");
+
+    let json_data = generate_manifest_json(&name);
+
+    match fs::write(&path_to_manifest, &json_data) {
+        Ok(_) => println!("successfully added manifest.json to the project"),
+        Err(err) => println!("failed to write manifest.json: {:?}", err),
+    }
+
+    println!("generating README.md");
+
+    let readme = generate_readme_md(&name);
+
+    match fs::write(&path_to_readme, &readme) {
+        Ok(_) => println!("successfully added README.md to the project"),
+        Err(err) => println!("failed to write README.md: {:?}", err),
     }
 }
 
@@ -169,7 +186,7 @@ fn generate_mod_json(name: &String, scripts: &Vec<Value>) -> String {
     let mod_json = json!({
         "Name" : name,
         "Description" : "",
-        "Version": "0.1.0",
+        "Version": "1.0.0",
         "LoadPriority": 1,
 
         "ConVars": [
@@ -178,12 +195,36 @@ fn generate_mod_json(name: &String, scripts: &Vec<Value>) -> String {
         "Scripts": scripts
     });
 
-    let mod_json: ModJson = serde_json::from_value(mod_json).expect("smth failed while trying to generate mod.json");
+    let mod_json: ModJson =
+        serde_json::from_value(mod_json).expect("smth failed while trying to generate mod.json");
 
+    serialize_with_indent(mod_json)
+}
+
+fn generate_manifest_json(name: &String) -> String {
+    let data = json!({
+        "name": name,
+        "version_number": "1.0.0",
+        "website_url": "",
+        "description": "",
+        "dependencies": []
+    });
+
+    serialize_with_indent(data)
+}
+
+fn generate_readme_md(name: &String) -> String {
+    String::from( "# " ) + &name
+}
+
+fn serialize_with_indent<T>(data: T) -> String
+where
+    T: Serialize,
+{
     let buf = Vec::new();
     let formatter = serde_json::ser::PrettyFormatter::with_indent(b"    ");
     let mut ser = serde_json::Serializer::with_formatter(buf, formatter);
-    mod_json.serialize(&mut ser).unwrap();
+    data.serialize(&mut ser).unwrap();
     String::from_utf8(ser.into_inner()).unwrap()
 }
 
@@ -199,26 +240,3 @@ fn merge(a: &mut Value, b: &Value) {
         }
     }
 }
-
-/*
-reference :D
-{
-    "Name" : "cat_or_not.AimLab",
-    "Description" : "A mod to help you improve your aim :D",
-    "Version": "0.1.0",
-    "LoadPriority": 1,
-
-    "ConVars": [
-    ],
-
-    "Scripts": [
-        {
-            "Path": "server.nut",
-            "RunOn": "SERVER && MP",
-            "ServerCallback": {
-                "After": "Init_server"
-            }
-        }
-    ]
-}
-*/
