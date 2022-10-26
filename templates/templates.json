@@ -75,8 +75,8 @@
                 "inits": null
             },
             {
-                "name": "sh_private_lobby_mp_map.gnut",
-                "path": "mod/scripts/vscripts/lobby",
+                "name": "lobby/sh_private_lobby_mp_map.gnut",
+                "path": "mod/scripts/vscripts",
                 "run_on": "SERVER && MP",
                 "inits": [
                     {

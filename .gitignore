@@ -6,6 +6,7 @@
 #rust :D
 /target
 /author.test
+/.vscode
 
 # User-specific files
 *.rsuser
