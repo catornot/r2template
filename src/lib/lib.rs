@@ -5,12 +5,16 @@ use process_path::get_dylib_path;
 
 use super::info::new_author;
 use super::new::new_project;
+use super::pack::pack_project;
 
 #[derive(Parser, Debug)]
 #[command(author, version,about, long_about = None)]
 pub struct Cli {
     #[arg(short, long)]
     new: Option<String>,
+
+    #[arg(short, long)]
+    pack: Option<String>,
 
     #[arg(short, long)]
     template: Option<String>,
@@ -34,9 +38,16 @@ impl Cli {
             _ => "server-side".to_string(),
         };
 
-        match Self::parse().new {
-            Some(arg) => new_project(arg, template),
-            _ => print!(""),
+        let can_continue = match Self::parse().new {
+            Some(arg) => {new_project(arg, template); false},
+            _ => true,
+        };
+
+        if can_continue {
+            match Self::parse().pack {
+                Some(arg) => pack_project(arg),
+                _ => print!(""),
+            };
         }
     }
 }

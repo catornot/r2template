@@ -61,14 +61,23 @@ pub fn new_project(name: String, template: String) {
             _ => println!("built folders: {:?}", path),
         };
 
-        let mut write_path = PathBuf::new();
-        write_path = write_path.join(&path);
-        write_path = write_path.join(&file.name);
-
         let mut read_path = PathBuf::new();
-        read_path = read_path.join(&template.path_to_json);
-        read_path = read_path.join(&file.path);
-        read_path = read_path.join(&file.name);
+        read_path.push(&template.path_to_json);
+        read_path.push(&file.path);
+
+        let file_name: &String = &file.name.split('/').filter( | value| {
+            if read_path.join(value).exists() && read_path.join(value).is_file() {
+                return true
+            }
+
+            false
+        } ).collect();
+
+        let mut write_path = PathBuf::new();
+        write_path.push(&path);
+        write_path.push(file_name);
+    
+        read_path.push(file_name);
 
         if read_path.is_dir() {
             println!("This is a dir; reading nothing; continuing normally");

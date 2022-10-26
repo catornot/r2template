@@ -76,7 +76,7 @@
             },
             {
                 "name": "lobby/sh_private_lobby_mp_map.gnut",
-                "path": "mod/scripts/vscripts",
+                "path": "mod/scripts/vscripts/lobby",
                 "run_on": "SERVER && MP",
                 "inits": [
                     {
@@ -98,6 +98,14 @@
                 "run_on": null,
                 "inits": null
             }
+        ],
+        "icon": [
+            {
+                "name": "icon.png",
+                "path": "",
+                "run_on": null,
+                "inits": null
+            }
         ]
     },
     "combo_templates": {
@@ -106,11 +114,13 @@
             "client-side",
             "shared",
             "weapon-keyvalues",
-            "maps"
+            "maps",
+            "icon"
         ],
         "maps-server-side": [
             "server-side",
-            "maps"
+            "maps",
+            "icon"
         ]
     }
 }

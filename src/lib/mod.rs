@@ -3,6 +3,7 @@ pub use lib::Cli;
 mod info;
 mod lib;
 mod new;
+mod pack;
 
 mod prelude {
     pub use super::info::get_project_name;
