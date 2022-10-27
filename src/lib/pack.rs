@@ -1,9 +1,13 @@
 use std::{
-    fs::{self, create_dir},
+    fs::{self, create_dir, File},
+    io::{Read, Write},
     path::Path,
     path::PathBuf,
     process::exit,
 };
+use walkdir::WalkDir;
+use zip::write::FileOptions;
+use zip::ZipWriter;
 
 pub fn pack_project(name: String) {
     let path = Path::new(&name);
@@ -11,56 +15,122 @@ pub fn pack_project(name: String) {
     let path_mod_json = path.join("mod.json");
     let path_manifest_json = path.join("manifest.json");
     let path_read_me = path.join("README.md");
+    let path_icon_png = path.join("icon.png");
     let path_temp = path.join("temp");
 
-    create_dir(&path_temp).expect("failed to generate a temp folder");
-    println!("generated /temp folder");
+    if path_temp.is_dir() {
+        println!("/temp already exists");
+        println!("removing /temp");
+        fs::remove_dir_all(&path_temp).expect("lmao this code explode when trying to delete a dir");
+    }
+
+    match create_dir(&path_temp) {
+        Ok(_) => println!("generated /temp folder"),
+        Err(err) => {
+            println!("couldn't create {:?}", path_temp);
+            println!("{:?}", err);
+            exit(0)
+        }
+    };
+    println!("");
 
     is_valid_file(path_mod_json, true);
     is_valid_file(path_manifest_json, true);
     is_valid_file(path_read_me, true);
+    is_valid_file(path_icon_png, false);
 
-    let mut includes = Vec::new();
+    let mut includes: Vec<PathBuf> = Vec::new();
 
-    for entry in fs::read_dir(path).expect("failed to read target dir :(") {
-        match entry {
-            Ok(file) => includes.push(file.path()),
-            Err(err) => println!("ingoring error caused by faulty entry : {:?}", err),
-        }
-    }
+    dir_walk(&path.to_path_buf(), &mut includes);
 
     for entry in includes {
-        let path = path_temp.join(match entry.as_path().file_name() {
-            None => {
-                println!("failed to get a new path; error will be ignored");
-                continue;
+        let mut path = path_temp.join(&entry);
+        // let path: PathBuf = path
+        //     .iter()
+        //     .filter(|p| {
+        //         if p.to_str() == Some(&name[..]) {
+        //             println!("{:?}", Some(&name[..]));
+        //             return false;
+        //         }
+        //         true
+        //     })
+        //     .collect();
+
+        let mut path_dir = path.clone();
+        path_dir.pop();
+
+        match fs::create_dir_all(&path_dir) {
+            Err(err) => {
+                println!("failed to create dirs for {:?} in {:?}", &entry, path_dir);
+                println!("because of {}", err);
             }
-            Some(name) => name,
-        });
+            Ok(_) => println!("created all dirs for {:?}", entry),
+        };
+
+        if path.file_name().is_some() {
+            let filename = &*path.file_name().unwrap().to_string_lossy().to_owned();
+            if filename == "manifest.json" || filename == "README.md" || filename == "icon.png" {
+                path = path_temp.join(&filename);
+            }
+        }
 
         match fs::copy(&entry, &path) {
-            Err(err) => println!(
-                "copying failed of {:?} to {:?} because of {}",
-                entry, path, err
-            ),
-            Ok(_) => println!("copied {:?} to {:?} successfully", entry, path),
+            Err(err) => {
+                println!("copying failed of {:?} to {:?}", &entry, path);
+                println!("because of {}", err);
+            }
+            Ok(_) => println!("copied {:?} to {:?}", &entry, path),
         };
     }
 
+    _ = fs::rename(path_temp.join(&name), path_temp.join("mod"));
+
+    println!("");
     println!("everything was copied successfully to a temp folder");
-    // println!("zipping the folder");
-    
-    println!("zip the temp folder your self :)");
+    println!("zipping the folder");
+    println!("");
 
-    // if cfg!(target_os = "windows") {
-    //     zip_windows(&path_temp, &name)
-    // } else {
-    //     println!("unsupported os; so zip it manually");
-    //     exit(0);
-    // }
+    let path_packed = path.join("packed.zip");
 
-    // fs::remove_dir_all(path_temp).expect("lmao this code explode when trying to delete a dir");
-    // println!("cleaned up temp file");
+    if path_packed.is_file() {
+        println!("packed.zip already exists");
+        println!("removing packed.zip");
+        fs::remove_file(&path_packed).expect("lmao this code explode when trying to delete a file");
+    }
+
+    let writer = match File::create(path_packed) {
+        Ok(file) => file,
+        Err(err) => {
+            println!("couldn't create packed.zip");
+            println!("{:?}", err);
+            exit(0)
+        }
+    };
+
+    let mut zip = Box::new(zip::ZipWriter::new(writer));
+    let options = FileOptions::default()
+        .compression_method(zip::CompressionMethod::Deflated)
+        .unix_permissions(0o755);
+
+    let mut buffer = Vec::new();
+
+    match zip_walk(
+        &path_temp,
+        &(name.to_owned() + "temp"),
+        &mut zip,
+        &options,
+        &mut buffer,
+    ) {
+        Ok(_) => match zip.finish() {
+            Ok(_) => println!("zip packed successfully"),
+            Err(err) => println!("zip packing failed because of {:?}", err),
+        },
+        Err(err) => println!("zip packing failed because of {:?}", err),
+    }
+
+    println!("");
+    fs::remove_dir_all(path_temp).expect("lmao this code explode when trying to delete a dir");
+    println!("cleaned up temp file");
 }
 
 fn is_valid_file(path: PathBuf, should_exit: bool) {
@@ -74,16 +144,53 @@ fn is_valid_file(path: PathBuf, should_exit: bool) {
     }
 }
 
-// fn zip_windows(path: &PathBuf, name: &String) {
-//     let path = path.join("/");
+fn dir_walk(path: &PathBuf, includes: &mut Vec<PathBuf>) {
+    for entry in fs::read_dir(path).expect("failed to read target dir :(") {
+        match entry {
+            Ok(file) => {
+                let path = file.path();
+                if path.is_file() {
+                    includes.push(file.path())
+                } else {
+                    dir_walk(&path, includes)
+                }
+            }
+            Err(err) => println!("ingoring error caused by faulty entry : {:?}", err),
+        }
+    }
+}
 
-//     match Command::new("powershell")
-//         .args([
-//             &format!("Compress-Archive {} {}", path.to_str().unwrap(), name.to_owned() + ".zip"),
-//         ])
-//         .output()
-//     {
-//         Ok(out) => println!("zipped successfully : {:?}", out),
-//         Err(err) => println!("zip failed : {}", err),
-//     }
-// }
+fn zip_walk(
+    folder: &PathBuf,
+    prefix: &String,
+    zip: &mut ZipWriter<File>,
+    options: &FileOptions,
+    buffer: &mut Vec<u8>,
+) -> zip::result::ZipResult<()> {
+    let walkdir = WalkDir::new(&folder);
+
+    for entry in walkdir.into_iter() {
+        if entry.is_err() {
+            println!("{:?} error will be ingored", entry)
+        }
+        let entry = entry.unwrap();
+
+        let path = entry.path();
+
+        if path.is_file() {
+            println!("adding file {:?}", path);
+            #[allow(deprecated)]
+            zip.start_file(path.to_str().unwrap(), *options)?;
+            let mut f = File::open(path)?;
+
+            f.read_to_end(buffer)?;
+            zip.write_all(&*buffer)?;
+            buffer.clear();
+        } else if path.is_dir() {
+            println!("adding dir {:?}", path);
+            zip.add_directory(path.to_str().unwrap(), *options)?;
+        }
+    }
+
+    Ok(())
+}
