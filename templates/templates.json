@@ -77,14 +77,48 @@
             {
                 "name": "lobby/sh_private_lobby_mp_map.gnut",
                 "path": "mod/scripts/vscripts/lobby",
-                "run_on": "SERVER && MP",
+                "run_on": "(SERVER || CLIENT) && MP",
                 "inits": [
                     {
                         "target": "ServerCallback",
                         "when": "Before",
                         "function": "PrivateLobbyAddMpMapMap"
+                    },
+                    {
+                        "target": "ClientCallback",
+                        "when": "Before",
+                        "function": "PrivateLobbyAddMpMapMap"
                     }
                 ]
+            },
+            {
+                "name": "sh_mp_map.gnut",
+                "path": "mod/scripts/vscripts",
+                "run_on": "(SERVER || CLIENT) && MP",
+                "inits": [
+                    {
+                        "target": "ServerCallback",
+                        "when": "Before",
+                        "function": "Shared_mp_map"
+                    },
+                    {
+                        "target": "ClientCallback",
+                        "when": "Before",
+                        "function": "Shared_mp_map"
+                    }
+                ]
+            },
+            {
+                "name": "mp_map.nut",
+                "path": "mod/scripts/vscripts"
+            },
+            {
+                "name": "cl_mp_map.nut",
+                "path": "mod/scripts/vscripts"
+            },
+            {
+                "name": "mp_map.rson",
+                "path": "mod/scripts/levels"
             },
             {
                 "name": "rpak.json",
@@ -97,6 +131,10 @@
                 "path": "vpk",
                 "run_on": null,
                 "inits": null
+            },
+            {
+                "name": "rename_vpk.py",
+                "path": "vpk"
             }
         ],
         "icon": [

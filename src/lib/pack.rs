@@ -18,6 +18,11 @@ pub fn pack_project(name: String) {
     let path_icon_png = path.join("icon.png");
     let path_temp = path.join("temp");
 
+    is_valid_file(path_mod_json, true);
+    is_valid_file(path_manifest_json, true);
+    is_valid_file(path_read_me, true);
+    is_valid_file(path_icon_png, false);
+
     if path_temp.is_dir() {
         println!("/temp already exists");
         println!("removing /temp");
@@ -33,11 +38,6 @@ pub fn pack_project(name: String) {
         }
     };
     println!("");
-
-    is_valid_file(path_mod_json, true);
-    is_valid_file(path_manifest_json, true);
-    is_valid_file(path_read_me, true);
-    is_valid_file(path_icon_png, false);
 
     let mut includes: Vec<PathBuf> = Vec::new();
 
