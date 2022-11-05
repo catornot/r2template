@@ -26,7 +26,7 @@ the executable needs to be included with the templates folder and it should cros
 # install if rust isn't installed
 >> git clone https://github.com/catornot/r2template.git
 >> cd r2template/
->> cargo install --path .
+>> cargo install --path . --features cargo_templates
 ```
 
 ### Linux
@@ -35,5 +35,5 @@ $ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 # add ~/.cargo/bin to path if using fish
 $ git clone https://github.com/catornot/r2template.git
 $ cd r2template/
-$ cargo install --path .
+$ cargo install --path . --features cargo_templates
 ```

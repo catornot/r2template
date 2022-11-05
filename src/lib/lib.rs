@@ -1,7 +1,7 @@
 use std::{fs, path::PathBuf};
 
 use clap::Parser;
-use process_path::get_dylib_path;
+use process_path::get_executable_path;
 
 use super::info::new_author;
 use super::new::new_project;
@@ -25,6 +25,7 @@ pub struct Cli {
 
 impl Cli {
     pub fn commands() {
+
         match Self::parse().author {
             Some(arg) => match new_author(&arg) {
                 Err(err) => println!("failed to serialize : {:?}", err),
@@ -56,7 +57,7 @@ impl Cli {
 }
 
 fn get_project_root() -> PathBuf {
-    let path = get_dylib_path();
+    let path = get_executable_path();
     let mut path = match path {
         None => panic!("The process path could not be determined"),
         Some(path) => path,
