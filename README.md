@@ -36,4 +36,5 @@ $ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 $ git clone https://github.com/catornot/r2template.git
 $ cd r2template/
 $ cargo install --path .
+$ cp ./templates ~/.cargo/bin/
 ```
