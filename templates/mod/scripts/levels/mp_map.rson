@@ -1,0 +1,19 @@
+
+IsTestMap: false
+
+When: "SERVER"
+Scripts:
+[
+	mp_map.nut
+]
+
+When: "SERVER || CLIENT"
+Scripts:
+[
+]
+
+When: "CLIENT"
+Scripts:
+[
+	cl_mp_map.nut
+]

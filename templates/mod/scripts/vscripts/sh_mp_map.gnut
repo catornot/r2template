@@ -1,0 +1,14 @@
+global function Shared_mp_map
+
+void function Shared_mp_map()
+{
+    if ( GetMapName() != "mp_map" )
+        return
+    
+    AddCallback_OnRegisteringCustomNetworkVars( RegisterNetworkVars )
+}
+
+void function RegisterNetworkVars()
+{
+
+}
