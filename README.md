@@ -13,16 +13,21 @@ currently by default the following templates are included
 - client-side -> client side boilerplate
 - shared -> client side and server side in one file (shared) boilerplate
 - full -> everything in one neat package
+- maps -> basic folder structure and files for new maps
+- icon -> adds a icon to the folder for packing into thunderstore mods
+- maps-icon -> maps and icon in one
 
 ## Compiling from source
 the executable needs to be included with the templates folder and it should cross platform
 
 ### Windows
-1. get rustup
-2. build it in release
-3. put the exe with templates folder
-4. done
-5. add it to path
+```powershell
+>> winget install rustup 
+# install if rust isn't installed
+>> git clone https://github.com/catornot/r2template.git
+>> cd r2template/
+>> cargo install --path .
+```
 
 ### Linux
 ```bash

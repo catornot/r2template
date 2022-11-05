@@ -155,9 +155,8 @@
             "maps",
             "icon"
         ],
-        "maps-server-side": [
+        "maps-icon": [
             "server-side",
-            "maps",
             "icon"
         ]
     }

@@ -10,16 +10,16 @@ use super::pack::pack_project;
 #[derive(Parser, Debug)]
 #[command(author, version,about, long_about = None)]
 pub struct Cli {
-    #[arg(short, long)]
+    #[arg(short, long, help = "creates a new mod from a name")]
     new: Option<String>,
 
-    #[arg(short, long)]
+    #[arg(short, long, help = "PROTO packs mods into thunderstore format")]
     pack: Option<String>,
 
-    #[arg(short, long)]
+    #[arg(short, long, help = "specifies the template used to generate the mod")]
     template: Option<String>,
 
-    #[arg(short, long)]
+    #[arg(short, long, help = "specifies the author of the mod")]
     author: Option<String>,
 }
 
@@ -39,7 +39,10 @@ impl Cli {
         };
 
         let can_continue = match Self::parse().new {
-            Some(arg) => {new_project(arg, template); false},
+            Some(arg) => {
+                new_project(arg, template);
+                false
+            }
             _ => true,
         };
 
@@ -73,7 +76,7 @@ fn get_project_root() -> PathBuf {
         } else {
             new_path = new_path.join(p);
         }
-    };
+    }
 
     new_path
 }
@@ -85,9 +88,8 @@ pub fn read_relative_json(reltive_path: &str) -> (String, PathBuf) {
     let path = path.join(reltive_path);
 
     (
-        fs::read_to_string(&path)
-            .expect(&format!("failed to read json file : {:?}", path)[..]),
-            path,
+        fs::read_to_string(&path).expect(&format!("failed to read json file : {:?}", path)[..]),
+        path,
     )
 }
 
