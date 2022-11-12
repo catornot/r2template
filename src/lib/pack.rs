@@ -127,12 +127,12 @@ pub fn pack_project(name: String) {
     }
 
     println!();
-    // fs::remove_dir_all(path_temp).expect("lmao this code explode when trying to delete a dir");
+    fs::remove_dir_all(path_temp).expect("lmao this code explode when trying to delete a dir");
     println!("cleaned up temp file");
 
-    fs::remove_file(&path_packed).expect("lmao this code explode when trying to delete a file");
+    // fs::remove_file(&path_packed).expect("lmao this code explode when trying to delete a file");
 
-    println!("currently zipping is broken so pls consider opening a pr to fix or zip it yourself, then delete the temp folder")
+    // println!("currently zipping is broken so pls consider opening a pr to fix or zip it yourself, then delete the temp folder")
 }
 
 fn is_valid_file(path: PathBuf, should_exit: bool) {
