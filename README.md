@@ -23,7 +23,7 @@ run the following command in the parent of the mod
 r2template -p author:mod_name
 ```
 
-## Compiling from source
+## Installing
 the executable needs to be included with the templates folder and it should cross platform
 
 ### Windows
