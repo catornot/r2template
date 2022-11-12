@@ -37,24 +37,35 @@ pub fn pack_project(name: String) {
             exit(0)
         }
     };
-    println!("");
+    match create_dir(path_temp.join("mods")) {
+        Ok(_) => println!("generated /temp/mods folder"),
+        Err(err) => {
+            println!("couldn't create mods folder");
+            println!("{:?}", err);
+            exit(0)
+        }
+    };
+    println!();
 
     let mut includes: Vec<PathBuf> = Vec::new();
 
     dir_walk(&path.to_path_buf(), &mut includes);
 
+    let mod_path = path_temp.join("mods");
     for entry in includes {
-        let mut path = path_temp.join(&entry);
-        // let path: PathBuf = path
-        //     .iter()
-        //     .filter(|p| {
-        //         if p.to_str() == Some(&name[..]) {
-        //             println!("{:?}", Some(&name[..]));
-        //             return false;
-        //         }
-        //         true
-        //     })
-        //     .collect();
+        let path = path_temp.join(&entry);
+
+        let path = if path.file_name().is_some() {
+            let filename = &*path.file_name().unwrap().to_string_lossy().to_owned();
+            let org_path = &entry;
+            if filename != "manifest.json" && filename != "README.md" && filename != "icon.png" {
+                mod_path.join(org_path)
+            } else {
+                path_temp.join(filename)
+            }
+        } else {
+            path
+        };
 
         let mut path_dir = path.clone();
         path_dir.pop();
@@ -67,13 +78,6 @@ pub fn pack_project(name: String) {
             Ok(_) => println!("created all dirs for {:?}", entry),
         };
 
-        if path.file_name().is_some() {
-            let filename = &*path.file_name().unwrap().to_string_lossy().to_owned();
-            if filename == "manifest.json" || filename == "README.md" || filename == "icon.png" {
-                path = path_temp.join(&filename);
-            }
-        }
-
         match fs::copy(&entry, &path) {
             Err(err) => {
                 println!("copying failed of {:?} to {:?}", &entry, path);
@@ -83,12 +87,12 @@ pub fn pack_project(name: String) {
         };
     }
 
-    _ = fs::rename(path_temp.join(&name), path_temp.join("mod"));
+    _ = fs::rename(path_temp.join(&name), path_temp.join("mods"));
 
-    println!("");
+    println!();
     println!("everything was copied successfully to a temp folder");
-    println!("zipping the folder");
-    println!("");
+    println!("zipping {:?}", path_temp);
+    println!();
 
     let path_packed = path.join("packed.zip");
 
@@ -98,7 +102,7 @@ pub fn pack_project(name: String) {
         fs::remove_file(&path_packed).expect("lmao this code explode when trying to delete a file");
     }
 
-    let writer = match File::create(path_packed) {
+    let writer = match File::create(&path_packed) {
         Ok(file) => file,
         Err(err) => {
             println!("couldn't create packed.zip");
@@ -114,13 +118,7 @@ pub fn pack_project(name: String) {
 
     let mut buffer = Vec::new();
 
-    match zip_walk(
-        &path_temp,
-        &(name.to_owned() + "temp"),
-        &mut zip,
-        &options,
-        &mut buffer,
-    ) {
+    match zip_walk(&path_temp, name.to_owned(), &mut zip, &options, &mut buffer) {
         Ok(_) => match zip.finish() {
             Ok(_) => println!("zip packed successfully"),
             Err(err) => println!("zip packing failed because of {:?}", err),
@@ -128,9 +126,13 @@ pub fn pack_project(name: String) {
         Err(err) => println!("zip packing failed because of {:?}", err),
     }
 
-    println!("");
-    fs::remove_dir_all(path_temp).expect("lmao this code explode when trying to delete a dir");
+    println!();
+    // fs::remove_dir_all(path_temp).expect("lmao this code explode when trying to delete a dir");
     println!("cleaned up temp file");
+
+    fs::remove_file(&path_packed).expect("lmao this code explode when trying to delete a file");
+
+    println!("currently zipping is broken for me so pls consider opening pr to fix or zip it yourself, then delete the temp folder")
 }
 
 fn is_valid_file(path: PathBuf, should_exit: bool) {
@@ -162,12 +164,12 @@ fn dir_walk(path: &PathBuf, includes: &mut Vec<PathBuf>) {
 
 fn zip_walk(
     folder: &PathBuf,
-    prefix: &String,
+    prefix: String,
     zip: &mut ZipWriter<File>,
     options: &FileOptions,
     buffer: &mut Vec<u8>,
 ) -> zip::result::ZipResult<()> {
-    let walkdir = WalkDir::new(&folder);
+    let walkdir = WalkDir::new(folder);
 
     for entry in walkdir.into_iter() {
         if entry.is_err() {
@@ -176,10 +178,10 @@ fn zip_walk(
         let entry = entry.unwrap();
 
         let path = entry.path();
+        let path = path.strip_prefix(&prefix).unwrap();
 
         if path.is_file() {
             println!("adding file {:?}", path);
-            #[allow(deprecated)]
             zip.start_file(path.to_str().unwrap(), *options)?;
             let mut f = File::open(path)?;
 

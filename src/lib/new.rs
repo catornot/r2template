@@ -165,7 +165,7 @@ fn get_template(template_name: &String) -> Template {
 
     Template {
         path_to_json: path,
-        includes: includes,
+        includes,
     }
 }
 
@@ -223,7 +223,7 @@ fn generate_manifest_json(name: &String) -> String {
 }
 
 fn generate_readme_md(name: &String) -> String {
-    String::from( "# " ) + &name
+    String::from( "# " ) + name
 }
 
 fn serialize_with_indent<T>(data: T) -> String

@@ -27,7 +27,7 @@ impl Cli {
     pub fn commands() {
 
         match Self::parse().author {
-            Some(arg) => match new_author(&arg) {
+            Some(arg) => match new_author(arg.clone()) {
                 Err(err) => println!("failed to serialize : {:?}", err),
                 Ok(_) => println!("author is set to {}", arg),
             },

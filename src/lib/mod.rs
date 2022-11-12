@@ -1,6 +1,7 @@
 pub use lib::Cli;
 
 mod info;
+#[allow(clippy::module_inception)]
 mod lib;
 mod new;
 mod pack;

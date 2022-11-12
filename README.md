@@ -17,6 +17,12 @@ currently by default the following templates are included
 - icon -> adds a icon to the folder for packing into thunderstore mods
 - maps-icon -> maps and icon in one
 
+### Packing
+run the following command in the parent of the mod
+```bash
+r2template -p author:mod_name
+```
+
 ## Compiling from source
 the executable needs to be included with the templates folder and it should cross platform
 

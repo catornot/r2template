@@ -20,5 +20,4 @@ home = "0.5.4"
 walkdir = "2.3.2"
 
 [features]
-default = []
 cargo_templates = []

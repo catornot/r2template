@@ -18,12 +18,12 @@ pub fn get_project_name(name: &String) -> String {
     name
 }
 
-pub fn new_author(author: &String) -> Result<(), serde_json::Error> {
+pub fn new_author(author: String) -> Result<(), serde_json::Error> {
     let json = &read_relative_json("templates\\info.json").0[..];
 
     let mut data: InfoJson = serde_json::from_str(json).expect("someone destroyed info.json");
 
-    data.author = author.clone();
+    data.author = author;
 
     write_relative_json(
         "templates\\info.json",
