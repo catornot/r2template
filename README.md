@@ -18,9 +18,9 @@ currently by default the following templates are included
 - maps-icon -> maps and icon in one
 
 ### Packing
-run the following command in the parent of the mod
+run the following command in the mod folder
 ```bash
-r2template -p author:mod_name
+r2template -p .
 ```
 
 ## Installing
