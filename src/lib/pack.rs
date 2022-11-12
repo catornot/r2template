@@ -127,12 +127,12 @@ pub fn pack_project(name: String) {
     }
 
     println!();
-    // fs::remove_dir_all(path_temp).expect("lmao this code explode when trying to delete a dir");
+    fs::remove_dir_all(path_temp).expect("lmao this code explode when trying to delete a dir");
     println!("cleaned up temp file");
 
-    fs::remove_file(&path_packed).expect("lmao this code explode when trying to delete a file");
+    // fs::remove_file(&path_packed).expect("lmao this code explode when trying to delete a file");
 
-    println!("currently zipping is broken so pls consider opening a pr to fix or zip it yourself, then delete the temp folder")
+    // println!("currently zipping is broken so pls consider opening a pr to fix or zip it yourself, then delete the temp folder")
 }
 
 fn is_valid_file(path: PathBuf, should_exit: bool) {
@@ -214,13 +214,13 @@ fn zip_walk(
         let entry = entry.unwrap();
 
         let path = entry.path();
-        let path = path.strip_prefix(&prefix).unwrap();
+        let striped_path = path.strip_prefix(&prefix).unwrap();
 
         println!( "{:?}", path );
 
         if path.is_file() {
             println!("adding file {:?}", path);
-            zip.start_file(path.to_str().unwrap(), *options)?;
+            zip.start_file(striped_path.to_str().unwrap(), *options)?;
             let mut f = File::open(path)?;
 
             f.read_to_end(buffer)?;
@@ -228,7 +228,7 @@ fn zip_walk(
             buffer.clear();
         } else if path.is_dir() {
             println!("adding dir {:?}", path);
-            zip.add_directory(path.to_str().unwrap(), *options)?;
+            zip.add_directory(striped_path.to_str().unwrap(), *options)?;
         }
     }
 
