@@ -118,7 +118,7 @@ pub fn pack_project(name: String) {
 
     let mut buffer = Vec::new();
 
-    match zip_walk(&path_temp, name.to_owned(), &mut zip, &options, &mut buffer) {
+    match zip_walk(&path_temp, name.to_owned() + "\\temp", &mut zip, &options, &mut buffer) {
         Ok(_) => match zip.finish() {
             Ok(_) => println!("zip packed successfully"),
             Err(err) => println!("zip packing failed because of {:?}", err),
@@ -130,9 +130,9 @@ pub fn pack_project(name: String) {
     fs::remove_dir_all(path_temp).expect("lmao this code explode when trying to delete a dir");
     println!("cleaned up temp file");
 
-    // fs::remove_file(&path_packed).expect("lmao this code explode when trying to delete a file");
+    fs::remove_file(&path_packed).expect("lmao this code explode when trying to delete a file");
 
-    // println!("currently zipping is broken so pls consider opening a pr to fix or zip it yourself, then delete the temp folder")
+    println!("currently zipping is broken so pls consider opening a pr to fix or zip it yourself, then delete the temp folder")
 }
 
 fn is_valid_file(path: PathBuf, should_exit: bool) {
@@ -162,6 +162,42 @@ fn dir_walk(path: &PathBuf, includes: &mut Vec<PathBuf>) {
     }
 }
 
+// fn zip_walk(
+//     folder: &PathBuf,
+//     prefix: String,
+//     zip: &mut ZipWriter<File>,
+//     options: &FileOptions,
+//     buffer: &mut Vec<u8>,
+// ) -> zip::result::ZipResult<()> {
+//     // let walkdir = WalkDir::new(folder);
+
+//     for entry in folder.read_dir().expect("failed to read target dir :(") {
+//         if entry.is_err() {
+//             println!("{:?} error will be ingored", entry)
+//         }
+//         let entry = entry.unwrap();
+
+//         let path = entry.path();
+//         let path = path.strip_prefix(&prefix).unwrap();
+
+//         if path.is_file() {
+//             println!("adding file {:?}", path);
+//             zip.start_file(path.to_str().unwrap(), *options)?;
+//             let mut f = File::open(path)?;
+
+//             f.read_to_end(buffer)?;
+//             zip.write_all(&*buffer)?;
+//             buffer.clear();
+//         } else if path.is_dir() {
+//             println!("adding dir {:?}", path);
+//             zip.add_directory(path.to_str().unwrap(), *options)?;
+//             zip_walk(folder, prefix.clone(), zip, options, buffer)?;
+//         }
+//     }
+
+//     Ok(())
+// }
+
 fn zip_walk(
     folder: &PathBuf,
     prefix: String,
@@ -179,6 +215,8 @@ fn zip_walk(
 
         let path = entry.path();
         let path = path.strip_prefix(&prefix).unwrap();
+
+        println!( "{:?}", path );
 
         if path.is_file() {
             println!("adding file {:?}", path);
