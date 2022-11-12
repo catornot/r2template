@@ -127,7 +127,7 @@ pub fn pack_project(name: String) {
     }
 
     println!();
-    fs::remove_dir_all(path_temp).expect("lmao this code explode when trying to delete a dir");
+    // fs::remove_dir_all(path_temp).expect("lmao this code explode when trying to delete a dir");
     println!("cleaned up temp file");
 
     fs::remove_file(&path_packed).expect("lmao this code explode when trying to delete a file");
